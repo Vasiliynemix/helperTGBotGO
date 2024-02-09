@@ -1,0 +1,20 @@
+env: local # local | prod
+debug: false # true | false
+
+logger:
+  dir: logs
+  file_info_name: info.log
+  file_debug_name: debug.log
+
+bot:
+  time_out: 60
+  admins: 5254091301
+
+db:
+  migration_dir_name: migrator
+  driver: postgres
+  ssl_mode: disable
+  pool:
+    max_idle_conn: 10
+    max_open_conn: 30
+    idle_timeout: 300s
