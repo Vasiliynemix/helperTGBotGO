@@ -65,9 +65,10 @@ func (r *HandlerRegister) CheckRegisterName(msg *tgbotapi.Message, state interfa
 }
 
 func (r *HandlerRegister) RegisterName(msg *tgbotapi.Message) {
-	err := r.stateProvider.UpdateState(msg.Chat.ID, r.lexicon.State.RegisterState, "isRegisteredName", false)
-	err = r.stateProvider.UpdateState(msg.Chat.ID, r.lexicon.State.RegisterState, "isRegisteredPhone", true)
-	err = r.stateProvider.UpdateState(msg.Chat.ID, r.lexicon.State.RegisterState, "name", msg.Text)
+	stateID := r.lexicon.State.RegisterState.ID
+	err := r.stateProvider.UpdateState(msg.Chat.ID, stateID, r.lexicon.State.RegisterState.NameKey, false)
+	err = r.stateProvider.UpdateState(msg.Chat.ID, stateID, r.lexicon.State.RegisterState.PhoneKey, true)
+	err = r.stateProvider.UpdateState(msg.Chat.ID, stateID, "name", msg.Text)
 	if err != nil {
 		r.errMsg.MsgErrorInternal(msg.Chat.ID)
 		return
@@ -99,7 +100,7 @@ func (r *HandlerRegister) CheckRegisterPhone(msg *tgbotapi.Message, state interf
 }
 
 func (r *HandlerRegister) RegisterPhone(msg *tgbotapi.Message, user *models.User) {
-	data, err := r.stateProvider.GetStateData(msg.Chat.ID, r.lexicon.State.RegisterState)
+	data, err := r.stateProvider.GetStateData(msg.Chat.ID, r.lexicon.State.RegisterState.ID)
 	if err != nil {
 		r.errMsg.MsgErrorInternal(msg.Chat.ID)
 		return
@@ -117,7 +118,7 @@ func (r *HandlerRegister) RegisterPhone(msg *tgbotapi.Message, user *models.User
 		return
 	}
 
-	err = r.stateProvider.ClearState(msg.Chat.ID, r.lexicon.State.RegisterState)
+	err = r.stateProvider.ClearState(msg.Chat.ID, r.lexicon.State.RegisterState.ID)
 	if err != nil {
 		r.errMsg.MsgErrorInternal(msg.Chat.ID)
 		return

@@ -22,7 +22,7 @@ func NewErrorsMsg(log *logging.Logger, bot *tgbotapi.BotAPI) *ErrorMsg {
 }
 
 func (e *ErrorMsg) MsgErrorInternal(telegramID int64) {
-	msgSend := tgbotapi.NewMessage(telegramID, e.lexicon.Msg.OnInternalError)
+	msgSend := tgbotapi.NewMessage(telegramID, e.lexicon.Err.OnInternalErr)
 
 	_, err := e.bot.Send(msgSend)
 	if err != nil {

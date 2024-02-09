@@ -69,7 +69,7 @@ func (r *HandlerStart) StartRegister(msg *tgbotapi.Message, user *models.User) {
 		return
 	}
 
-	err = r.stateProvider.UpdateState(msg.Chat.ID, r.lexicon.State.RegisterState, "isRegisteredName", true)
+	err = r.stateProvider.UpdateState(msg.Chat.ID, r.lexicon.State.RegisterState.ID, r.lexicon.State.RegisterState.NameKey, true)
 	if err != nil {
 		r.errMsg.MsgErrorInternal(msg.Chat.ID)
 	}

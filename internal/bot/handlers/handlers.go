@@ -67,10 +67,18 @@ func (h *Handler) CheckUpdates() {
 				h.startHandler.Start(update.Message)
 			}
 
-		case h.registerHandler.CheckRegisterName(update.Message, (state)[h.lexicon.State.RegisterState], "isRegisteredName"):
+		case h.registerHandler.CheckRegisterName(
+			update.Message,
+			(state)[h.lexicon.State.RegisterState.ID],
+			h.lexicon.State.RegisterState.NameKey,
+		):
 			h.registerHandler.RegisterName(update.Message)
 
-		case h.registerHandler.CheckRegisterPhone(update.Message, (state)[h.lexicon.State.RegisterState], "isRegisteredPhone"):
+		case h.registerHandler.CheckRegisterPhone(
+			update.Message,
+			(state)[h.lexicon.State.RegisterState.ID],
+			h.lexicon.State.RegisterState.PhoneKey,
+		):
 			h.registerHandler.RegisterPhone(update.Message, user)
 
 		default:

@@ -26,3 +26,5 @@ config.prod.yaml
 .idea/
 
 logs/
+
+data/
