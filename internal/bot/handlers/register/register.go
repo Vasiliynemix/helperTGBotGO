@@ -2,6 +2,7 @@ package register
 
 import (
 	"bot/internal/bot/handlers/errorsMsg"
+	"bot/internal/bot/keybords"
 	"bot/internal/bot/lexicon"
 	"bot/internal/storage/postgres/models"
 	"bot/pkg/logging"
@@ -12,6 +13,7 @@ import (
 type HandlerRegister struct {
 	log           *logging.Logger
 	bot           *tgbotapi.BotAPI
+	kb            *keybords.Keyboards
 	lexicon       *lexicon.Lexicon
 	errMsg        *errorsMsg.ErrorMsg
 	stateProvider StateProvider
@@ -32,6 +34,8 @@ type UserUpdater interface {
 func NewHandlerRegister(
 	log *logging.Logger,
 	bot *tgbotapi.BotAPI,
+	kb *keybords.Keyboards,
+	lexicon *lexicon.Lexicon,
 	errMsg *errorsMsg.ErrorMsg,
 	stateProvider StateProvider,
 	userUpdater UserUpdater,
@@ -40,7 +44,8 @@ func NewHandlerRegister(
 	return &HandlerRegister{
 		log:           log,
 		bot:           bot,
-		lexicon:       lexicon.NewLexicon(),
+		kb:            kb,
+		lexicon:       lexicon,
 		errMsg:        errMsg,
 		stateProvider: stateProvider,
 		userUpdater:   userUpdater,
@@ -125,6 +130,14 @@ func (r *HandlerRegister) RegisterPhone(msg *tgbotapi.Message, user *models.User
 	}
 
 	msgSend := tgbotapi.NewMessage(msg.Chat.ID, r.lexicon.Msg.OnEndRegister)
+
+	_, err = r.bot.Send(msgSend)
+	if err != nil {
+		r.log.Error("Failed to send message", zap.Error(err))
+	}
+
+	msgSend = tgbotapi.NewMessage(msg.Chat.ID, r.lexicon.Msg.OnStartCommand)
+	msgSend.ReplyMarkup = r.kb.Reply.StartMenuReplyMP()
 
 	_, err = r.bot.Send(msgSend)
 	if err != nil {

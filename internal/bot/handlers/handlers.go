@@ -4,9 +4,11 @@ import (
 	"bot/internal/bot/handlers/errorsMsg"
 	"bot/internal/bot/handlers/register"
 	"bot/internal/bot/handlers/start"
+	"bot/internal/bot/keybords"
 	"bot/internal/bot/lexicon"
 	"bot/internal/bot/middlewares"
 	"bot/internal/storage"
+	"bot/internal/storage/postgres/models"
 	"bot/pkg/logging"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"time"
@@ -31,12 +33,20 @@ func NewHandlers(
 	storage *storage.Storage,
 ) *Handler {
 	errorsMsgSend := errorsMsg.NewErrorsMsg(log, bot)
-	startHandler := start.NewHandlerStart(log, bot, errorsMsgSend, storage.Redis, storage.Postgres.User)
-	registerHandler := register.NewHandlerRegister(log, bot, errorsMsgSend, storage.Redis, storage.Postgres.User)
+	l := lexicon.NewLexicon()
+	kb := keybords.NewKeyboards(l)
+	startHandler := start.NewHandlerStart(
+		log, bot, kb, l, errorsMsgSend,
+		storage.Redis, storage.Postgres.User,
+	)
+	registerHandler := register.NewHandlerRegister(
+		log, bot, kb, l, errorsMsgSend,
+		storage.Redis, storage.Postgres.User,
+	)
 
 	return &Handler{
 		updates:         updates,
-		lexicon:         lexicon.NewLexicon(),
+		lexicon:         l,
 		mv:              mv,
 		bot:             bot,
 		storage:         storage,
@@ -60,26 +70,17 @@ func (h *Handler) CheckUpdates() {
 		}
 
 		switch {
-		case h.startHandler.CheckStart(update.Message):
-			if user == nil || !user.IsRegistered {
-				h.startHandler.StartRegister(update.Message, user)
-			} else {
-				h.startHandler.Start(update.Message)
+		case update.Message != nil:
+			ok := h.checkMessageUpdates(update.Message, user, state)
+			if !ok {
+				continue
 			}
 
-		case h.registerHandler.CheckRegisterName(
-			update.Message,
-			(state)[h.lexicon.State.RegisterState.ID],
-			h.lexicon.State.RegisterState.NameKey,
-		):
-			h.registerHandler.RegisterName(update.Message)
-
-		case h.registerHandler.CheckRegisterPhone(
-			update.Message,
-			(state)[h.lexicon.State.RegisterState.ID],
-			h.lexicon.State.RegisterState.PhoneKey,
-		):
-			h.registerHandler.RegisterPhone(update.Message, user)
+		case update.CallbackQuery != nil:
+			ok := h.checkCallbackUpdates(update.CallbackQuery, user, state)
+			if !ok {
+				continue
+			}
 
 		default:
 			continue
@@ -87,5 +88,44 @@ func (h *Handler) CheckUpdates() {
 		timeEnd := time.Since(timeNow)
 		executionTimeMilliseconds := float64(timeEnd.Nanoseconds()) / 1e6
 		h.mv.UpdateInfoMv(update, executionTimeMilliseconds)
+	}
+}
+
+func (h *Handler) checkMessageUpdates(msg *tgbotapi.Message, user *models.User, state map[string]interface{}) bool {
+	switch {
+	case h.startHandler.CheckStart(msg):
+		if user == nil || !user.IsRegistered {
+			h.startHandler.StartRegister(msg, user)
+		} else {
+			h.startHandler.Start(msg)
+		}
+		return true
+
+	case h.registerHandler.CheckRegisterName(
+		msg,
+		(state)[h.lexicon.State.RegisterState.ID],
+		h.lexicon.State.RegisterState.NameKey,
+	):
+		h.registerHandler.RegisterName(msg)
+		return true
+
+	case h.registerHandler.CheckRegisterPhone(
+		msg,
+		(state)[h.lexicon.State.RegisterState.ID],
+		h.lexicon.State.RegisterState.PhoneKey,
+	):
+		h.registerHandler.RegisterPhone(msg, user)
+		return true
+
+	default:
+		return false
+	}
+}
+
+func (h *Handler) checkCallbackUpdates(callback *tgbotapi.CallbackQuery, user *models.User, state map[string]interface{}) bool {
+	switch {
+
+	default:
+		return false
 	}
 }

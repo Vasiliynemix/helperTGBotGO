@@ -2,6 +2,7 @@ package start
 
 import (
 	"bot/internal/bot/handlers/errorsMsg"
+	"bot/internal/bot/keybords"
 	"bot/internal/bot/lexicon"
 	"bot/internal/storage/postgres/models"
 	"bot/pkg/logging"
@@ -12,6 +13,7 @@ import (
 type HandlerStart struct {
 	log           *logging.Logger
 	bot           *tgbotapi.BotAPI
+	kb            *keybords.Keyboards
 	lexicon       *lexicon.Lexicon
 	errMsg        *errorsMsg.ErrorMsg
 	stateProvider StateProvider
@@ -32,6 +34,8 @@ type StateProvider interface {
 func NewHandlerStart(
 	log *logging.Logger,
 	bot *tgbotapi.BotAPI,
+	kb *keybords.Keyboards,
+	lexicon *lexicon.Lexicon,
 	errMsg *errorsMsg.ErrorMsg,
 	stateProvider StateProvider,
 	userProvider UserProvider,
@@ -41,7 +45,8 @@ func NewHandlerStart(
 	return &HandlerStart{
 		log:           log,
 		bot:           bot,
-		lexicon:       lexicon.NewLexicon(),
+		kb:            kb,
+		lexicon:       lexicon,
 		errMsg:        errMsg,
 		stateProvider: stateProvider,
 		userProvider:  userProvider,
@@ -79,6 +84,7 @@ func (r *HandlerStart) Start(msg *tgbotapi.Message) {
 	_ = r.stateProvider.ClearAllStates(msg.Chat.ID)
 
 	msgSend := tgbotapi.NewMessage(msg.Chat.ID, r.lexicon.Msg.OnStartCommand)
+	msgSend.ReplyMarkup = r.kb.Reply.StartMenuReplyMP()
 
 	_, err := r.bot.Send(msgSend)
 	if err != nil {
