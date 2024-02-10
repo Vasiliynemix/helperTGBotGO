@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bot/internal/bot/handlers/admin"
 	"bot/internal/bot/handlers/errorsMsg"
 	"bot/internal/bot/handlers/register"
 	"bot/internal/bot/handlers/start"
@@ -26,6 +27,7 @@ type Handler struct {
 	startHandler    *start.HandlerStart
 	registerHandler *register.HandlerRegister
 	userHandler     *userH.HandlerUser
+	adminHandler    *admin.HandlerAdmin
 }
 
 func NewHandlers(
@@ -38,13 +40,20 @@ func NewHandlers(
 	errorsMsgSend := errorsMsg.NewErrorsMsg(log, bot)
 	l := lexicon.NewLexicon()
 	kb := keyboards.NewKeyboards(l)
+
 	startHandler := start.NewHandlerStart(
 		log, bot, kb, l, errorsMsgSend,
 		storage.Redis, storage.Postgres.User,
 	)
+
 	registerHandler := register.NewHandlerRegister(
 		log, bot, kb, l, errorsMsgSend,
 		storage.Redis, storage.Postgres.User,
+	)
+
+	adminHandler := admin.NewHandlerAdmin(
+		log, bot, kb, l, errorsMsgSend,
+		storage.Redis,
 	)
 
 	userHandler := userH.NewHandlerUser(
@@ -63,6 +72,7 @@ func NewHandlers(
 		startHandler:    startHandler,
 		registerHandler: registerHandler,
 		userHandler:     userHandler,
+		adminHandler:    adminHandler,
 	}
 }
 
@@ -107,11 +117,14 @@ func (h *Handler) checkMessageUpdates(msg *tgbotapi.Message, user *models.User, 
 		if user == nil || !user.IsRegistered {
 			go h.startHandler.StartRegister(msg, user)
 		} else {
-			go h.startHandler.Start(msg)
+			go h.startHandler.Start(msg, user)
 		}
 		return true
 
 	case h.checkRegisterUpdates(msg, user, state):
+		return true
+
+	case h.checkAdminUpdates(msg, user, state):
 		return true
 
 	case h.userHandler.CheckProfileReply(msg):
@@ -123,6 +136,25 @@ func (h *Handler) checkMessageUpdates(msg *tgbotapi.Message, user *models.User, 
 		return true
 
 	case h.checkBackUpdates(msg, user, state):
+		return true
+
+	default:
+		return false
+	}
+}
+
+func (h *Handler) checkAdminUpdates(msg *tgbotapi.Message, user *models.User, state map[string]interface{}) bool {
+	if !user.IsAdmin {
+		return false
+	}
+
+	switch {
+	case h.adminHandler.CheckAdminPanelReply(msg):
+		h.adminHandler.AdminPanelReply(msg)
+		return true
+
+	case h.adminHandler.CheckUserPanelReply(msg):
+		h.adminHandler.UserPanelReply(msg)
 		return true
 
 	default:
@@ -160,7 +192,7 @@ func (h *Handler) checkBackUpdates(msg *tgbotapi.Message, user *models.User, sta
 		(state)[h.lexicon.State.MenuLevelState.ID],
 		h.lexicon.State.MenuLevelState.BackMenuKey,
 	):
-		go h.userHandler.BackToMenuReply(msg)
+		go h.userHandler.BackToMenuReply(msg, user)
 		return true
 
 	case h.userHandler.CheckBackToProfileReply(

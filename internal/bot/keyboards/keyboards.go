@@ -29,12 +29,18 @@ func NewKeyboards(lexicon *lexicon.Lexicon) *Keyboards {
 	}
 }
 
-func (k *ReplyKeyboards) StartMenuReplyMP(oneTimeKB bool) tgbotapi.ReplyKeyboardMarkup {
+func (k *ReplyKeyboards) StartMenuReplyMP(oneTimeKB bool, isAdmin bool) tgbotapi.ReplyKeyboardMarkup {
 	menuKB := tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton(k.lexicon.KB.Reply.Profile),
 		),
 	)
+	if isAdmin {
+		menuKB.Keyboard = append(menuKB.Keyboard, tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(k.lexicon.KB.Reply.Admin),
+		))
+	}
+
 	menuKB.ResizeKeyboard = true
 	menuKB.OneTimeKeyboard = oneTimeKB
 	return menuKB

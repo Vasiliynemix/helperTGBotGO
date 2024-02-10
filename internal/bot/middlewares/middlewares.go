@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"bot/internal/config"
 	"bot/internal/storage/postgres/models"
 	"bot/pkg/logging"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 )
 
 type Middlewares struct {
+	cfg           *config.Config
 	log           *logging.Logger
 	userProvider  UserProvider
 	stateProvider StateProvider
@@ -25,11 +27,13 @@ type StateProvider interface {
 }
 
 func InitMiddlewares(
+	cfg *config.Config,
 	log *logging.Logger,
 	userProvider UserProvider,
 	stateProvider StateProvider,
 ) *Middlewares {
 	return &Middlewares{
+		cfg:           cfg,
 		log:           log,
 		userProvider:  userProvider,
 		stateProvider: stateProvider,
@@ -80,6 +84,13 @@ func (m *Middlewares) GetUserMv(msg tgbotapi.Update) *models.User {
 		TelegramID: telegramID,
 		UserName:   userName,
 		CreatedAt:  time.Now().UTC().Unix(),
+	}
+
+	for _, admin := range m.cfg.Bot.Admins {
+		if admin == telegramID {
+			userAdd.IsAdmin = true
+			break
+		}
 	}
 
 	userShow, err = m.userProvider.SetUser(userAdd)

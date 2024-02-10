@@ -9,6 +9,8 @@ type User struct {
 	Phone        string
 	IsRegistered bool
 
+	IsAdmin bool
+
 	CreatedAt int64 `gorm:"not null"`
 	UpdatedAt int64
 }

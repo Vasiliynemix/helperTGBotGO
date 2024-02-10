@@ -80,11 +80,11 @@ func (r *HandlerStart) StartRegister(msg *tgbotapi.Message, user *models.User) {
 	}
 }
 
-func (r *HandlerStart) Start(msg *tgbotapi.Message) {
+func (r *HandlerStart) Start(msg *tgbotapi.Message, user *models.User) {
 	_ = r.stateProvider.ClearAllStates(msg.Chat.ID)
 
 	msgSend := tgbotapi.NewMessage(msg.Chat.ID, r.lexicon.Msg.OnStartCommand)
-	msgSend.ReplyMarkup = r.kb.Reply.StartMenuReplyMP(false)
+	msgSend.ReplyMarkup = r.kb.Reply.StartMenuReplyMP(false, user.IsAdmin)
 
 	_, err := r.bot.Send(msgSend)
 	if err != nil {

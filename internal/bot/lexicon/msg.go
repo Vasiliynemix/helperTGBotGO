@@ -9,9 +9,13 @@ const (
 	OnRegisterPhoneMsg    = "Отлично %s! Введи свой номер телефона."
 	OnEndRegisterMsg      = "Регистрация прошла успешно!"
 
-	OnProfileMsg = ProfileMsg
-	OnMenuMsg    = OnStartCmdMsg
-	OnBalanceMsg = BalanceMsg
+	OnProfileMsg    = ProfileMsg
+	OnMenuMsg       = OnStartCmdMsg
+	OnBalanceMsg    = BalanceMsg
+	OnAddBalanceMsg = AddBalanceMsg
+
+	OnAdminPanelMsg = AdminPanelMsg
+	OnUserPanelMsg  = UserPanelMsg
 )
 
 type MessageSend struct {
@@ -21,6 +25,9 @@ type MessageSend struct {
 	OnProfile              string
 	OnMenu                 string
 	OnBalance              string
+	OnAddBalance           string
+	OnAdminPanel           string
+	OnUserPanel            string
 }
 
 func NewSendMsg() MessageSend {
@@ -31,6 +38,9 @@ func NewSendMsg() MessageSend {
 		OnProfile:              OnProfileMsg,
 		OnMenu:                 OnMenuMsg,
 		OnBalance:              OnBalanceMsg,
+		OnAddBalance:           OnAddBalanceMsg,
+		OnAdminPanel:           OnAdminPanelMsg,
+		OnUserPanel:            OnUserPanelMsg,
 	}
 }
 

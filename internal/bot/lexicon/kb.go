@@ -12,6 +12,9 @@ const (
 
 	AddBalanceMsg    = "➕ Пополнить"
 	RemoveBalanceMsg = "➖ Вывести"
+
+	AdminPanelMsg = "👨‍💻 Админ панель"
+	UserPanelMsg  = "👤 Пользовательская панель"
 )
 
 type KBMsg struct {
@@ -25,6 +28,8 @@ type ReplyKBMsg struct {
 	AddBalance    string
 	RemoveBalance string
 	Back          string
+	Admin         string
+	User          string
 }
 
 type InlineKBMsg struct {
@@ -47,6 +52,8 @@ func NewReplyKBMsg() ReplyKBMsg {
 		AddBalance:    AddBalanceMsg,
 		RemoveBalance: RemoveBalanceMsg,
 		Back:          BackMsg,
+		Admin:         AdminPanelMsg,
+		User:          UserPanelMsg,
 	}
 }
 

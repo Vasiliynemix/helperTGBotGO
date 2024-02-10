@@ -137,7 +137,7 @@ func (r *HandlerRegister) RegisterPhone(msg *tgbotapi.Message, user *models.User
 	}
 
 	msgSend = tgbotapi.NewMessage(msg.Chat.ID, r.lexicon.Msg.OnStartCommand)
-	msgSend.ReplyMarkup = r.kb.Reply.StartMenuReplyMP(false)
+	msgSend.ReplyMarkup = r.kb.Reply.StartMenuReplyMP(false, user.IsAdmin)
 
 	_, err = r.bot.Send(msgSend)
 	if err != nil {

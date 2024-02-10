@@ -11,6 +11,7 @@ import (
 )
 
 type Bot struct {
+	cfg     *config.Config
 	log     *logging.Logger
 	storage *storage.Storage
 	bot     *tgbotapi.BotAPI
@@ -26,6 +27,7 @@ func NewBot(cfg *config.Config, log *logging.Logger, storage *storage.Storage) *
 
 	bot.Debug = cfg.Debug
 	return &Bot{
+		cfg:     cfg,
 		log:     log,
 		storage: storage,
 		bot:     bot,
@@ -40,7 +42,7 @@ func (b *Bot) Run() {
 		b.log,
 		b.bot,
 		updates,
-		middlewares.InitMiddlewares(b.log, b.storage.Postgres.User, b.storage.Redis),
+		middlewares.InitMiddlewares(b.cfg, b.log, b.storage.Postgres.User, b.storage.Redis),
 		b.storage,
 	)
 

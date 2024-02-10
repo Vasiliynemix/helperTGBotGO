@@ -1,11 +1,15 @@
 package user
 
 import (
+	"bot/internal/storage/postgres/models"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"go.uber.org/zap"
 )
 
 func (r *HandlerUser) CheckBackToMenuReply(msg *tgbotapi.Message, state interface{}, key string) bool {
+	if state == nil {
+		return false
+	}
 	value := state.(map[string]interface{})[key].(string)
 	ok := value == r.lexicon.State.MenuLevelState.MenuValue
 
@@ -13,15 +17,18 @@ func (r *HandlerUser) CheckBackToMenuReply(msg *tgbotapi.Message, state interfac
 }
 
 func (r *HandlerUser) CheckBackToProfileReply(msg *tgbotapi.Message, state interface{}, key string) bool {
+	if state == nil {
+		return false
+	}
 	value := state.(map[string]interface{})[key].(string)
 	ok := value == r.lexicon.State.MenuLevelState.ProfileValue
 
 	return msg != nil && msg.Text == r.lexicon.KB.Reply.Back && ok
 }
 
-func (r *HandlerUser) BackToMenuReply(msg *tgbotapi.Message) {
+func (r *HandlerUser) BackToMenuReply(msg *tgbotapi.Message, user *models.User) {
 	msgSend := tgbotapi.NewMessage(msg.Chat.ID, r.lexicon.Msg.OnMenu)
-	msgSend.ReplyMarkup = r.kb.Reply.StartMenuReplyMP(false)
+	msgSend.ReplyMarkup = r.kb.Reply.StartMenuReplyMP(false, user.IsAdmin)
 
 	err := r.stateProvider.UpdateStateMap(
 		msg.Chat.ID,
