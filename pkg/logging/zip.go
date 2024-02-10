@@ -19,7 +19,7 @@ func ClearLogFiles(
 ) {
 	logger.Info("Clearing log files started")
 
-	maxFileSize := int64(500 * 1024 * 1024) // 500MB
+	maxFileSize := int64(5 * 1024 * 1024) // 10MB
 
 	CreatePathToFile(pathToInfoLogs)
 
@@ -99,7 +99,8 @@ func generateZipFileName(
 	pathToDebugLog string,
 	structDateFormat string,
 ) string {
-	fileName := strings.Split(sourceFilePath, "/")[2]
+	pathSlice := strings.Split(sourceFilePath, "/")
+	fileName := pathSlice[len(pathSlice)-1]
 
 	var logPath string
 
@@ -110,10 +111,10 @@ func generateZipFileName(
 		logPath = pathToInfoLog
 	}
 
-	oldFileName := strings.Split(logPath, "/")[2]
+	//oldFileName := strings.Split(logPath, "/")[2]
 	newFileName := fmt.Sprintf("%s_%s", time.Now().Format(structDateFormat), fileName)
 
-	filePath := strings.Replace(logPath, oldFileName, newFileName, 1)
+	filePath := strings.Replace(logPath, fileName, newFileName, 1)
 	zipFilePath := strings.Replace(filePath, ".log", ".zip", 1)
 	return zipFilePath
 }

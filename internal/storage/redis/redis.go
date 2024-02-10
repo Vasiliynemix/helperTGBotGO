@@ -93,6 +93,25 @@ func (r *Redis) GetStateAll(telegramID int64) (map[string]interface{}, error) {
 	return stateData, nil
 }
 
+func (r *Redis) UpdateStateMap(telegramID int64, stateName string, stateData map[string]interface{}) error {
+	currentState, err := r.GetStateData(telegramID, stateName)
+	if currentState == nil {
+		_ = r.SetState(telegramID, stateName, &map[string]interface{}{"start": true})
+		currentState, err = r.GetStateData(telegramID, stateName)
+	}
+
+	for key, value := range stateData {
+		currentState[key] = value
+	}
+
+	err = r.SetState(telegramID, stateName, &currentState)
+	if err != nil {
+		r.log.Error("failed to update state", zap.Error(err))
+		return err
+	}
+	return nil
+}
+
 func (r *Redis) UpdateState(telegramID int64, stateName string, fieldName string, fieldValue interface{}) error {
 	currentState, err := r.GetStateData(telegramID, stateName)
 	if currentState == nil {

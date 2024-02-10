@@ -2,7 +2,7 @@ package register
 
 import (
 	"bot/internal/bot/handlers/errorsMsg"
-	"bot/internal/bot/keybords"
+	"bot/internal/bot/keyboards"
 	"bot/internal/bot/lexicon"
 	"bot/internal/storage/postgres/models"
 	"bot/pkg/logging"
@@ -13,7 +13,7 @@ import (
 type HandlerRegister struct {
 	log           *logging.Logger
 	bot           *tgbotapi.BotAPI
-	kb            *keybords.Keyboards
+	kb            *keyboards.Keyboards
 	lexicon       *lexicon.Lexicon
 	errMsg        *errorsMsg.ErrorMsg
 	stateProvider StateProvider
@@ -34,7 +34,7 @@ type UserUpdater interface {
 func NewHandlerRegister(
 	log *logging.Logger,
 	bot *tgbotapi.BotAPI,
-	kb *keybords.Keyboards,
+	kb *keyboards.Keyboards,
 	lexicon *lexicon.Lexicon,
 	errMsg *errorsMsg.ErrorMsg,
 	stateProvider StateProvider,
@@ -137,7 +137,7 @@ func (r *HandlerRegister) RegisterPhone(msg *tgbotapi.Message, user *models.User
 	}
 
 	msgSend = tgbotapi.NewMessage(msg.Chat.ID, r.lexicon.Msg.OnStartCommand)
-	msgSend.ReplyMarkup = r.kb.Reply.StartMenuReplyMP()
+	msgSend.ReplyMarkup = r.kb.Reply.StartMenuReplyMP(false)
 
 	_, err = r.bot.Send(msgSend)
 	if err != nil {
